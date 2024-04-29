@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+
+  nginx:
+    image: nginx:1.25.5-alpine
+    container_name: me-nginx
+    restart: on-failure
+    volumes:
+      - ./:/app
+      - ./.devops/nginx/conf:/etc/nginx/conf.d
+      - ./logs/nginx:/var/log/nginx
+    env_file: .env
+    depends_on:
+      - php
+    ports:
+      - '8080:80'
+    networks:
+      - default
+      - docker-environment_internal
+
+  php:
+    build:
+      context: .
+      dockerfile: ./.devops/php/Dockerfile
+    container_name: me-php
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./:/app
+      - ./logs/php:/var/log/php
+    networks:
+      - default
+      - docker-environment_internal
+
+networks:
+  docker-environment_internal:
+    external: false
